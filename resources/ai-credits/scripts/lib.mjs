@@ -19,22 +19,31 @@ export const PLANS = {
 };
 
 // USD per 1M token units. cachedInput=null means model has no separate cached price.
+// Source of truth: GitHub Copilot billing model pricing docs. 1 credit = $0.01.
+// Soft-match on findModel() means variant ids can inherit the nearest family rate.
 export const MODELS = [
-  { id: "gpt-4o",                   label: "OpenAI GPT-4o",                     input: 2.50, cachedInput: 1.25, output: 10.00, aliases: ["openai-gpt-4o", "gpt4o"] },
-  { id: "gpt-4o-mini",              label: "OpenAI GPT-4o mini",                input: 0.15, cachedInput: 0.08, output: 0.60,  aliases: ["openai-gpt-4o-mini", "gpt4o-mini"] },
-  { id: "gpt-4.1",                  label: "OpenAI GPT-4.1",                    input: 2.00, cachedInput: 0.50, output: 8.00,  aliases: ["openai-gpt-4.1", "gpt41"] },
-  { id: "gpt-4.1-mini",             label: "OpenAI GPT-4.1-mini",               input: 0.40, cachedInput: 0.10, output: 1.60,  aliases: ["openai-gpt-4.1-mini", "gpt41-mini"] },
-  { id: "phi-4",                    label: "Phi-4",                             input: 0.13, cachedInput: null, output: 0.50,  aliases: [] },
-  { id: "phi-4-mini-instruct",      label: "Phi-4-mini-instruct",               input: 0.08, cachedInput: null, output: 0.30,  aliases: [] },
-  { id: "phi-4-multimodal-instruct",label: "Phi-4-multimodal-instruct",         input: 0.08, cachedInput: null, output: 0.32,  aliases: [] },
-  { id: "deepseek-r1",              label: "DeepSeek-R1",                       input: 1.35, cachedInput: null, output: 5.40,  aliases: [] },
-  { id: "deepseek-r1-0528",         label: "DeepSeek-R1-0528",                  input: 1.35, cachedInput: null, output: 5.40,  aliases: [] },
-  { id: "deepseek-v3-0324",         label: "DeepSeek-V3-0324",                  input: 1.14, cachedInput: null, output: 4.56,  aliases: ["deepseek-v3"] },
-  { id: "mai-ds-r1",                label: "MAI-DS-R1",                         input: 1.35, cachedInput: null, output: 5.40,  aliases: [] },
-  { id: "grok-3-mini",              label: "Grok 3 Mini",                       input: 0.25, cachedInput: null, output: 1.27,  aliases: [] },
-  { id: "grok-3",                   label: "Grok 3",                            input: 3.00, cachedInput: null, output: 15.00, aliases: [] },
-  { id: "llama-4-maverick-17b",     label: "Llama 4 Maverick 17B Instruct FP8", input: 0.25, cachedInput: null, output: 1.00,  aliases: ["llama-4-maverick"] },
-  { id: "llama-3.3-70b-instruct",   label: "Llama-3.3-70B-Instruct",            input: 0.71, cachedInput: null, output: 0.71,  aliases: ["llama-3.3-70b"] },
+  { id: "gpt-5.5",                    label: "GPT-5.5",                         input: 5.00, cachedInput: 0.50,  output: 30.00, aliases: [] },
+  { id: "gpt-5.4-nano",               label: "GPT-5.4 nano",                    input: 0.20, cachedInput: 0.02,  output: 1.25,  aliases: [] },
+  { id: "gpt-5.4-mini",               label: "GPT-5.4 mini",                    input: 0.75, cachedInput: 0.075, output: 4.50,  aliases: [] },
+  { id: "gpt-5-mini",                 label: "GPT-5 mini",                      input: 0.25, cachedInput: 0.025, output: 2.00,  aliases: [] },
+  { id: "gpt-5.4",                    label: "GPT-5.4",                         input: 2.50, cachedInput: 0.25,  output: 15.00, aliases: [] },
+  { id: "gpt-5.3-codex",              label: "GPT-5.3-Codex",                   input: 1.75, cachedInput: 0.175, output: 14.00, aliases: [] },
+  { id: "gpt-5.2-codex",              label: "GPT-5.2-Codex",                   input: 1.75, cachedInput: 0.175, output: 14.00, aliases: [] },
+  { id: "gpt-5.2",                    label: "GPT-5.2",                         input: 1.75, cachedInput: 0.175, output: 14.00, aliases: [] },
+  { id: "gpt-4.1",                    label: "GPT-4.1",                         input: 2.00, cachedInput: 0.50,  output: 8.00,  aliases: ["openai-gpt-4.1", "gpt41", "gpt-4.1-2025-04-14"] },
+  { id: "claude-haiku-4.5",           label: "Claude Haiku 4.5",                 input: 1.00, cachedInput: 0.10,  cacheWrite: 1.25, output: 5.00,  aliases: ["haiku"] },
+  { id: "claude-sonnet-4",            label: "Claude Sonnet 4",                  input: 3.00, cachedInput: 0.30,  cacheWrite: 3.75, output: 15.00, aliases: [] },
+  { id: "claude-sonnet-4.6",          label: "Claude Sonnet 4.6",                input: 3.00, cachedInput: 0.30,  cacheWrite: 3.75, output: 15.00, aliases: ["sonnet"] },
+  { id: "claude-sonnet-4.5",          label: "Claude Sonnet 4.5",                input: 3.00, cachedInput: 0.30,  cacheWrite: 3.75, output: 15.00, aliases: [] },
+  { id: "claude-opus-4.7",            label: "Claude Opus 4.7",                  input: 5.00, cachedInput: 0.50,  cacheWrite: 6.25, output: 25.00, aliases: ["opus"] },
+  { id: "claude-opus-4.6",            label: "Claude Opus 4.6",                  input: 5.00, cachedInput: 0.50,  cacheWrite: 6.25, output: 25.00, aliases: [] },
+  { id: "claude-opus-4.5",            label: "Claude Opus 4.5",                  input: 5.00, cachedInput: 0.50,  cacheWrite: 6.25, output: 25.00, aliases: [] },
+  { id: "gemini-2.5-pro",             label: "Gemini 2.5 Pro",                   input: 1.25, cachedInput: 0.125, output: 10.00, aliases: [] },
+  { id: "gemini-3-flash",             label: "Gemini 3 Flash",                   input: 0.50, cachedInput: 0.05,  output: 3.00,  aliases: [] },
+  { id: "gemini-3.1-pro",             label: "Gemini 3.1 Pro",                   input: 2.00, cachedInput: 0.20,  output: 12.00, aliases: [] },
+  { id: "grok-code-fast-1",           label: "Grok Code Fast 1",                 input: 0.20, cachedInput: 0.02,  output: 1.50,  aliases: [] },
+  { id: "raptor-mini",                label: "Raptor mini",                      input: 0.25, cachedInput: 0.025, output: 2.00,  aliases: [] },
+  { id: "goldeneye",                  label: "Goldeneye",                        input: 1.25, cachedInput: 0.125, output: 10.00, aliases: [] },
 ];
 
 export function findModel(slug) {
@@ -63,8 +72,10 @@ export function computeCost(model, tokens, { strict = false } = {}) {
     throw err;
   }
   const cachedPrice = model.cachedInput ?? model.input;
+  const cacheWritePrice = model.cacheWrite ?? model.input;
   return (
-    ((input + cacheWrite) / 1_000_000) * model.input +
+    (input                 / 1_000_000) * model.input +
+    (cacheWrite            / 1_000_000) * cacheWritePrice +
     (cacheRead             / 1_000_000) * cachedPrice +
     (output                / 1_000_000) * model.output
   );
@@ -117,6 +128,7 @@ export function autoSeedFromEnv() {
 
 export function fmtUsd(n) {
   const a = Math.abs(n);
+  if (a === 0)  return `$0.00`;
   if (a < 0.01) return `$${n.toFixed(4)}`;
   if (a < 1)    return `$${n.toFixed(3)}`;
   return `$${n.toFixed(2)}`;

@@ -10,6 +10,7 @@
 //   4. Be cross-platform. Single .mjs file, optional .cmd wrapper for Windows.
 
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import {
   PLANS, USD_PER_CREDIT,
   findModel, computeCost, loadState, totalUsd,
@@ -30,7 +31,7 @@ const useOsc8 = envFlag("COPILOT_AI_CREDITS_OSC8", true);
 const gaugeCells = envInt("COPILOT_AI_CREDITS_GAUGE_CELLS", 10);
 const sparkLen = envInt("COPILOT_AI_CREDITS_SPARK_LEN", 12);
 const pathMode = (process.env.COPILOT_AI_CREDITS_PATH_MODE || "abbrev").toLowerCase();
-const cols = Number(process.env.COPILOT_AI_CREDITS_COLS) || process.stdout.columns || Number(process.env.COLUMNS) || 120;
+const cols = Number(process.env.COPILOT_AI_CREDITS_COLS) || process.stdout.columns || Number(process.env.COLUMNS) || 200;
 
 const ICONS = useNerd ? {
   model:    "\uf2db ",
@@ -88,16 +89,13 @@ const wrap = (s, color) => color && s ? `${color}${s}${c.reset}` : s;
 
 async function readStdin(timeoutMs = 250) {
   if (process.stdin.isTTY) return ""; // run from terminal with no pipe — used for testing
-  return await new Promise(resolve => {
-    let buf = "";
-    let done = false;
-    const finish = () => { if (!done) { done = true; resolve(buf); } };
-    process.stdin.setEncoding("utf8");
-    process.stdin.on("data", chunk => { buf += chunk; });
-    process.stdin.on("end", finish);
-    process.stdin.on("error", finish);
-    setTimeout(finish, timeoutMs).unref?.();
-  });
+  // Synchronous fd-0 read is more robust than event-based async reads — no race
+  // conditions with parents that pipe data and exit, and no event-loop hangs.
+  try {
+    return readFileSync(0, "utf8");
+  } catch {
+    return "";
+  }
 }
 
 function safeJson(raw) {
@@ -153,10 +151,12 @@ function sessionUsdFromPayload(payload) {
   const model = id ? findModel(id) : null;
   if (model && breakdown && typeof breakdown === "object") {
     return computeCost(model, {
-      input:      breakdown.input_tokens      ?? breakdown.total_input_tokens      ?? 0,
-      cacheRead:  breakdown.cache_read_tokens ?? breakdown.total_cache_read_tokens ?? 0,
-      cacheWrite: breakdown.cache_write_tokens ?? breakdown.total_cache_write_tokens ?? 0,
-      output:     breakdown.output_tokens     ?? breakdown.total_output_tokens     ?? 0,
+      input:      breakdown.input_tokens               ?? breakdown.total_input_tokens         ?? 0,
+      // CLI (v1.0.48) emits cache_read_input_tokens / cache_creation_input_tokens; older
+      // payloads (and our sample) use cache_read_tokens / cache_write_tokens. Accept both.
+      cacheRead:  breakdown.cache_read_input_tokens    ?? breakdown.cache_read_tokens          ?? breakdown.total_cache_read_tokens  ?? 0,
+      cacheWrite: breakdown.cache_creation_input_tokens?? breakdown.cache_write_tokens         ?? breakdown.total_cache_write_tokens ?? 0,
+      output:     breakdown.output_tokens              ?? breakdown.total_output_tokens        ?? 0,
     }, { strict: false });
   }
   if (model) {
@@ -322,6 +322,82 @@ function segCalendar() {
   return `${ICONS.calendar}${bar} ${wrap(`d${day}/${days}`, c.dim)}`;
 }
 
+// ---------- pretty segments (gist-inspired design) ----------
+
+// rgb_bar: 20-block gradient bar (green→yellow→red) + dynamic emoji
+function rgbColor(pct) {
+  if (COLOR < 16777216) return gradientAnsi(pct, COLOR); // fall back if no truecolor
+  if (pct <= 50) {
+    const t = pct / 50;
+    return `\x1b[38;2;${Math.round(220 * t)};200;${Math.round(80 * (1 - t))}m`;
+  }
+  const t = (pct - 50) / 50;
+  return `\x1b[38;2;220;${Math.round(200 - 160 * t)};${Math.round(20 * t)}m`;
+}
+
+function segRgbBar(payload) {
+  const ctx = payload.context_window || {};
+  const pct = pickContextPercent(ctx);
+  if (pct == null) return null;
+  const pctInt = Math.round(pct);
+  const BAR = 20;
+  const filled = Math.round(pctInt * BAR / 100);
+  let bar = "";
+  for (let i = 0; i < BAR; i++) {
+    const pos = i * 100 / (BAR - 1);
+    bar += i < filled ? rgbColor(pos) + "█" : "\x1b[38;2;60;60;60m░";
+  }
+  bar += c.reset;
+  const emoji = pctInt >= 90 ? "🚨" : pctInt >= 70 ? "🔥" : pctInt >= 20 ? "⚡" : "🟢";
+  const pctColor = pctInt >= 90 ? c.red : pctInt >= 70 ? c.yellow : c.green;
+  return `${emoji} ${bar} ${pctColor}${pctInt}%${c.reset}`;
+}
+
+// spend: compact "💳 $X.XX / $Y" — just the cost signal, no verbosity
+function segSpend(payload) {
+  const state = loadState();
+  if (!state.plan) return null;
+  const plan = PLANS[state.plan];
+  const sessionUsd = sessionUsdFromPayload(payload);
+  const monthUsd = totalUsd(state) + (sessionUsd || 0);
+  if (plan.unlimited) {
+    return sessionUsd != null ? `💳 ${wrap(fmtUsd(sessionUsd), c.yellow)}` : null;
+  }
+  const includedUsd = plan.includedCredits * USD_PER_CREDIT;
+  const burnedPct = (monthUsd / includedUsd) * 100;
+  const color = burnedPct >= 90 ? c.red : burnedPct >= 70 ? c.yellow : c.green;
+  return `💳 ${wrap(fmtUsd(monthUsd), color)} ${wrap(`/ $${includedUsd.toFixed(0)}`, c.dim)}`;
+}
+
+function tokenBreakdown(payload) {
+  const ctx = payload.context_window || {};
+  // Real CLI payload (v1.0.48) puts token counts directly on context_window,
+  // not in a current_usage sub-object. Accept both shapes.
+  const b = ctx.current_usage || {};
+  const inT  = Number(b.input_tokens  ?? ctx.last_call_input_tokens  ?? 0) || 0;
+  const outT = Number(b.output_tokens ?? ctx.last_call_output_tokens ?? 0) || 0;
+  // Cache: per-call fields from current_usage if present, else session totals from ctx.
+  const cacheR = Number(
+    b.cache_read_input_tokens ?? b.cache_read_tokens ??
+    ctx.total_cache_read_tokens ?? 0
+  ) || 0;
+  const cacheW = Number(
+    b.cache_creation_input_tokens ?? b.cache_write_tokens ??
+    ctx.total_cache_write_tokens ?? 0
+  ) || 0;
+  const cache = cacheR + cacheW;
+  return { input: inT, output: outT, cache, total: inT + outT + cache };
+}
+
+function segTokensBar(payload) {
+  const t = tokenBreakdown(payload);
+  if (t.total <= 0) return null;
+  // Compact number labels, ordered like the billing docs: input, cached, output.
+  return wrap(`🔷 in ${fmtTokens(t.input)}`,     c.blue)   + " "
+    + wrap(`♻️ cache ${fmtTokens(t.cache)}`, c.green)  + " "
+    + wrap(`🔶 out ${fmtTokens(t.output)}`,  c.yellow);
+}
+
 // ---------- assembly ----------
 
 const SEGMENT_FNS = {
@@ -337,9 +413,13 @@ const SEGMENT_FNS = {
   credits:        (p, gi) => segCredits(p),
   sparkline:      (p, gi) => segSparkline(p),
   calendar:       (p, gi) => segCalendar(),
+  tokens_bar:     (p, gi) => segTokensBar(p),
+  rgb_bar:        (p, gi) => segRgbBar(p),
+  spend:          (p, gi) => segSpend(p),
 };
 
-const SEP = wrap(" · ", c.dim);
+const SEPV = " │ ";
+const SEP  = wrap(" │ ", c.dim);
 
 function buildLine(names, payload, gi, maxWidth) {
   const segs = [];
@@ -359,25 +439,45 @@ function buildLine(names, payload, gi, maxWidth) {
   return segs[0] || "";
 }
 
-const DEFAULT_L1 = ["model", "context_bar", "last_call", "session_tokens", "duration"];
-const DEFAULT_L2 = ["path", "git", "lines", "session_name"];
-const DEFAULT_L3 = ["credits", "sparkline", "calendar"];
+// Default: RGB context bar + compact spend + token breakdown.
+// Repo, branch, and model are already shown in the CLI footer — skipped here.
+const DEFAULT_L1 = ["rgb_bar", "spend", "tokens_bar"];
+const DEFAULT_L2 = [];
+const DEFAULT_L3 = [];
+
+// Resolve a layout line in priority order:
+//   1. env var (highest — for one-off tweaks)
+//   2. state.json `layout.line<N>` (persists across sessions, survives /restart)
+//   3. hard-coded DEFAULT_L<N>
+function resolveLayout(envName, stateKey, fallback) {
+  const fromEnv = layoutFromEnv(envName, null);
+  if (fromEnv) return fromEnv;
+  try {
+    const layout = (loadState().layout) || {};
+    const fromState = layout[stateKey];
+    if (Array.isArray(fromState) && fromState.length) return fromState;
+    if (typeof fromState === "string" && fromState.trim()) {
+      return fromState.split(",").map(s => s.trim()).filter(Boolean);
+    }
+  } catch { /* state may not exist yet */ }
+  return fallback;
+}
 
 async function main() {
   const raw = await readStdin();
   const payload = safeJson(raw);
   const gi = gitInfo(payload.cwd);
   const lines = [
-    buildLine(layoutFromEnv("COPILOT_AI_CREDITS_LAYOUT_LINE1", DEFAULT_L1), payload, gi, cols),
-    buildLine(layoutFromEnv("COPILOT_AI_CREDITS_LAYOUT_LINE2", DEFAULT_L2), payload, gi, cols),
-    buildLine(layoutFromEnv("COPILOT_AI_CREDITS_LAYOUT_LINE3", DEFAULT_L3), payload, gi, cols),
+    buildLine(resolveLayout("COPILOT_AI_CREDITS_LAYOUT_LINE1", "line1", DEFAULT_L1), payload, gi, cols),
+    buildLine(resolveLayout("COPILOT_AI_CREDITS_LAYOUT_LINE2", "line2", DEFAULT_L2), payload, gi, cols),
+    buildLine(resolveLayout("COPILOT_AI_CREDITS_LAYOUT_LINE3", "line3", DEFAULT_L3), payload, gi, cols),
   ].filter(Boolean);
   process.stdout.write(lines.join("\n"));
 }
 
 try {
   await main();
-} catch {
+} catch (err) {
   // Last-ditch fallback. One quiet line is better than crashing or printing nothing.
   process.stdout.write("ai-credits unavailable");
 }

@@ -42,13 +42,16 @@ If `feature_flags.enabled` already exists, *append* `"STATUS_LINE"` — don't re
 {
   "statusLine": {
     "type":    "command",
-    "command": "node /Users/YOU/.copilot/skills/ai-credits/scripts/statusline.mjs",
+    "command": "/Users/YOU/.copilot/skills/ai-credits/scripts/statusline.mjs",
     "padding": 1
   }
 }
 ```
 
-Use the absolute path — `~` is not always expanded in this setting.
+Use the absolute path to the script itself — the Copilot CLI checks `existsSync(command)`
+and won't run anything if the value isn't a real file. Don't prefix with `node`; the script
+has a `#!/usr/bin/env node` shebang and is executable, so the CLI's `spawn(cmd, [], { shell: false })`
+will run it directly. `~` is not always expanded in this setting.
 
 ### Windows (cmd / PowerShell)
 
@@ -67,6 +70,12 @@ Use the `.cmd` wrapper. Putting `node "..."` directly in `command` is unreliable
 ## 3. Restart Copilot CLI
 
 Settings are read at launch, so restart the host process or run `/restart` inside Copilot CLI.
+
+## Smoke test
+
+```bash
+node ~/.copilot/skills/ai-credits/scripts/test.mjs
+```
 
 ## 4. Pick a plan
 
@@ -97,9 +106,9 @@ Set any of these env vars (e.g. in your shell rc) to tune the statusline:
 | Env var | Default | Effect |
 |---|---|---|
 | `COPILOT_AI_CREDITS_PLAN` | (unset) | Auto-seed plan on first render. `business` / `enterprise` / `unlimited`. |
-| `COPILOT_AI_CREDITS_LAYOUT_LINE1` | `model,context_bar,last_call,session_tokens,duration` | Comma-separated segment list for line 1. |
-| `COPILOT_AI_CREDITS_LAYOUT_LINE2` | `path,git,lines,session_name` | …line 2. Empty value hides the line. |
-| `COPILOT_AI_CREDITS_LAYOUT_LINE3` | `credits,sparkline,calendar` | …line 3. |
+| `COPILOT_AI_CREDITS_LAYOUT_LINE1` | `rgb_bar,spend,tokens_bar` | Comma-separated segment list for line 1. The default shows context pressure, spend, and input/cached/output token counts. |
+| `COPILOT_AI_CREDITS_LAYOUT_LINE2` | (empty) | …line 2. Empty value hides the line. Set e.g. `git,lines` to add it back. |
+| `COPILOT_AI_CREDITS_LAYOUT_LINE3` | (empty) | …line 3. Set e.g. `sparkline,calendar` to add the burn-rate row. |
 | `COPILOT_AI_CREDITS_GAUGE_CELLS` | `10` | Width of the context-window gauge. |
 | `COPILOT_AI_CREDITS_SPARK_LEN` | `12` | Number of recent context-% samples in the sparkline. |
 | `COPILOT_AI_CREDITS_PATH_MODE` | `abbrev` | `abbrev` (`~/.../foo/bar`), `leaf` (`bar`), or `full`. |
@@ -108,7 +117,20 @@ Set any of these env vars (e.g. in your shell rc) to tune the statusline:
 | `COPILOT_AI_CREDITS_COLS` | auto | Override max line width. Defaults to terminal columns. |
 | `NO_COLOR` | unset | Set to anything to disable ANSI colors entirely. |
 
-Available segment names: `model`, `context_bar`, `last_call`, `session_tokens`, `duration`, `path`, `git`, `lines`, `session_name`, `credits`, `sparkline`, `calendar`.
+Available segment names: `model`, `context_bar`, `last_call`, `session_tokens`, `duration`, `path`, `git`, `lines`, `session_name`, `credits`, `sparkline`, `calendar`, `tokens_bar`.
+
+### Example: live token breakdown next to spend
+
+```bash
+export COPILOT_AI_CREDITS_LAYOUT_LINE1="spend,tokens_bar"
+```
+
+Renders `🔷 in 12k ♻️ cache 8k 🔶 out 3k`. For the full annotated view with descriptions, run:
+
+```bash
+node ~/.copilot/skills/ai-credits/scripts/cost.mjs breakdown \
+  --model claude-opus-4.7 --in 2150 --out 412 --cache 1200
+```
 
 ### Example: minimalist single line
 

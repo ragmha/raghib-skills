@@ -7,8 +7,8 @@
 //   node cost.mjs set-plan <business|enterprise|unlimited>
 //   node cost.mjs show-plan
 //   node cost.mjs models
-//   node cost.mjs estimate <model> --in N [--cached-in N] --out N
-//   node cost.mjs record   <model> --in N [--cached-in N] --out N [--note "..."]
+//   node cost.mjs estimate <model> --in N [--cached-in N] [--cache-write N] --out N
+//   node cost.mjs record   <model> --in N [--cached-in N] [--cache-write N] --out N [--note "..."]
 //   node cost.mjs status
 //   node cost.mjs reset --yes
 //   node cost.mjs help
@@ -61,6 +61,7 @@ function tokensFromFlags(flags) {
   return {
     input:      parseTokens(flags.in,  "--in"),
     cacheRead:  flags["cached-in"] === undefined ? 0 : parseTokens(flags["cached-in"], "--cached-in"),
+    cacheWrite: flags["cache-write"] === undefined ? 0 : parseTokens(flags["cache-write"], "--cache-write"),
     output:     parseTokens(flags.out, "--out"),
   };
 }
@@ -167,11 +168,11 @@ function cmdShowPlan() {
 
 function cmdModels() {
   const w = (s, n) => String(s).padEnd(n);
-  console.log(`${w("model id", 30)} ${w("input $/M", 10)} ${w("cached $/M", 11)} ${w("output $/M", 10)}  label`);
-  console.log("-".repeat(90));
+  console.log(`${w("model id", 30)} ${w("input $/M", 10)} ${w("cached $/M", 11)} ${w("write $/M", 10)} ${w("output $/M", 10)}  label`);
+  console.log("-".repeat(102));
   for (const m of MODELS) {
     console.log(
-      `${w(m.id, 30)} ${w("$" + m.input.toFixed(2), 10)} ${w(m.cachedInput == null ? "N/A" : "$" + m.cachedInput.toFixed(2), 11)} ${w("$" + m.output.toFixed(2), 10)}  ${m.label}`
+      `${w(m.id, 30)} ${w(fmtUsd(m.input), 10)} ${w(m.cachedInput == null ? "N/A" : fmtUsd(m.cachedInput), 11)} ${w(m.cacheWrite == null ? "input" : fmtUsd(m.cacheWrite), 10)} ${w(fmtUsd(m.output), 10)}  ${m.label}`
     );
   }
 }
@@ -260,6 +261,102 @@ function cmdStatus() {
   }
 }
 
+function cmdBreakdown(args) {
+  const flags = parseFlags(args);
+  // Source the breakdown from explicit flags if given, otherwise fall back to a
+  // demo payload so a bare `cost.mjs breakdown` always produces something useful.
+  const inT     = flags.in      !== undefined ? parseTokens(flags.in,      "--in")      : 2150;
+  const outT    = flags.out     !== undefined ? parseTokens(flags.out,     "--out")     : 412;
+  const cacheT  = flags.cache   !== undefined ? parseTokens(flags.cache,   "--cache")
+                : flags["cached-in"] !== undefined ? parseTokens(flags["cached-in"], "--cached-in")
+                : 1200;
+  const total   = inT + outT + cacheT;
+  const slug    = flags.model || "gpt-5.5";
+  const model   = findModel(slug);
+  const cost    = model ? computeCost(model, { input: inT, cacheRead: cacheT, output: outT }, { strict: false }) : null;
+
+  // ANSI helpers — kept inline so this file has zero new imports.
+  const C = process.stdout.isTTY ? {
+    reset:"\x1b[0m", dim:"\x1b[2m", bold:"\x1b[1m",
+    blue:"\x1b[34m", magenta:"\x1b[35m", green:"\x1b[32m", white:"\x1b[97m",
+    boxDim:"\x1b[2m",
+  } : { reset:"", dim:"", bold:"", blue:"", magenta:"", green:"", white:"", boxDim:"" };
+  const w = (s, col) => col ? `${col}${s}${C.reset}` : s;
+  const bar = (n, max, len) => "█".repeat(Math.max(0, Math.min(len, Math.round(n / Math.max(max, 1) * len))));
+
+  const BAR_LEN = 20;
+  const COL = 24;
+  const lines = [
+    "",
+    w("┌────────────────────────────────────────────────────────────────────────────┐", C.boxDim),
+    w("│", C.boxDim) + "  " + w("Token breakdown", C.bold) + "                                                            " + w("│", C.boxDim),
+    w("├────────────────────────────────────────────────────────────────────────────┤", C.boxDim),
+    "",
+    "  " + w("↑ WHAT YOU SEND".padEnd(COL), C.blue + C.bold)    + w("↓ WHAT YOU GET".padEnd(COL), C.magenta + C.bold)   + w("⟳ WHAT'S REUSED", C.green + C.bold),
+    "  " + w(`Input · ${inT.toLocaleString()}`.padEnd(COL), C.blue) + w(`Output · ${outT.toLocaleString()}`.padEnd(COL), C.magenta) + w(`Cache · ${cacheT.toLocaleString()}`, C.green),
+    "  " + w(bar(inT, total, BAR_LEN).padEnd(COL), C.blue) + w(bar(outT, total, BAR_LEN).padEnd(COL), C.magenta) + w(bar(cacheT, total, BAR_LEN), C.green),
+    "  " + w("Prompts and new".padEnd(COL), C.dim) + w("AI-generated".padEnd(COL), C.dim)    + w("Context from previous", C.dim),
+    "  " + w("context. Can grow".padEnd(COL), C.dim) + w("responses. Typically".padEnd(COL), C.dim) + w("interactions. Improves", C.dim),
+    "  " + w("with large files".padEnd(COL), C.dim) + w("the highest cost.".padEnd(COL), C.dim) + w("speed and efficiency.", C.dim),
+    "",
+    w("├────────────────────────────────────────────────────────────────────────────┤", C.boxDim),
+    "  " + w("Billable", C.bold) + " = Input + Output + Cache  =  " + w(total.toLocaleString() + " tokens", C.white + C.bold)
+      + (cost != null ? "  =  " + w(fmtUsd(cost), C.white + C.bold) + " " + w(`(${fmtCredits(cost)})`, C.dim) : ""),
+    w("└────────────────────────────────────────────────────────────────────────────┘", C.boxDim),
+    "",
+  ];
+  console.log(lines.join("\n"));
+  if (!model) {
+    console.log(`  (model "${slug}" not in price table — token counts shown, $ omitted)`);
+  }
+}
+
+function cmdSetLayout(args) {
+  if (!args.length) {
+    const state = loadState();
+    const layout = state.layout || {};
+    console.log("Current persisted layout (used when no env var is set):");
+    console.log(`  line1: ${Array.isArray(layout.line1) ? layout.line1.join(",") : (layout.line1 || "(unset → default)")}`);
+    console.log(`  line2: ${Array.isArray(layout.line2) ? layout.line2.join(",") : (layout.line2 || "(unset → default)")}`);
+    console.log(`  line3: ${Array.isArray(layout.line3) ? layout.line3.join(",") : (layout.line3 || "(unset → default)")}`);
+    console.log("");
+    console.log("Usage:");
+    console.log("  cost.mjs set-layout <line1-spec> [line2-spec] [line3-spec]");
+    console.log("  cost.mjs set-layout reset            # clear, fall back to defaults");
+    console.log("");
+    console.log("Examples:");
+    console.log('  cost.mjs set-layout "spend,tokens_bar"');
+    console.log('  cost.mjs set-layout "credits,tokens_bar" "git,lines"');
+    console.log("");
+    console.log("Available segments:");
+    console.log("  credits, tokens_bar, model, context_bar, last_call, session_tokens,");
+    console.log("  duration, path, git, lines, session_name, sparkline, calendar");
+    return;
+  }
+  const state = loadState();
+  if (args[0] === "reset" || args[0] === "clear") {
+    delete state.layout;
+    saveState(state);
+    console.log("layout cleared. statusline will fall back to env vars or defaults.");
+    return;
+  }
+  const lines = args.slice(0, 3).map(spec =>
+    String(spec).split(",").map(s => s.trim()).filter(Boolean)
+  );
+  state.layout = {
+    line1: lines[0] || [],
+    line2: lines[1] || [],
+    line3: lines[2] || [],
+  };
+  saveState(state);
+  console.log("layout saved:");
+  console.log(`  line1: ${state.layout.line1.join(",") || "(empty)"}`);
+  console.log(`  line2: ${state.layout.line2.join(",") || "(empty)"}`);
+  console.log(`  line3: ${state.layout.line3.join(",") || "(empty)"}`);
+  console.log("");
+  console.log("statusline picks this up on its next render — no /restart needed.");
+}
+
 function cmdReset(args) {
   const flags = parseFlags(args);
   if (!flags.yes) fail("reset is destructive — re-run with --yes to confirm");
@@ -281,11 +378,16 @@ Subcommands:
                                     Non-interactive — set a plan immediately.
   show-plan                         Show the active plan and included allowance.
   models                            List supported models with USD prices per 1M tokens.
-  estimate <model> --in N [--cached-in N] --out N
+  estimate <model> --in N [--cached-in N] [--cache-write N] --out N
                                     One-off cost estimate; no state change.
-  record   <model> --in N [--cached-in N] --out N [--note "..."]
+  record   <model> --in N [--cached-in N] [--cache-write N] --out N [--note "..."]
                                     Append a call to the running tally.
   status                            Month-to-date spend vs included allowance.
+  breakdown [--model M --in N --out N --cache N]
+                                    Visualize input/output/cache → billable tokens.
+  set-layout [line1] [line2] [line3]
+                                    Persist statusline layout to state.json.
+                                    Pass 'reset' to clear; no args to inspect.
   reset --yes                       Clear the running tally (keeps plan).
   help                              This text.
 
@@ -310,6 +412,8 @@ try {
     case "estimate":  cmdEstimate(rest); break;
     case "record":    cmdRecord(rest); break;
     case "status":    cmdStatus(); break;
+    case "breakdown": cmdBreakdown(rest); break;
+    case "set-layout":cmdSetLayout(rest); break;
     case "reset":     cmdReset(rest); break;
     case undefined:
     case "help":
