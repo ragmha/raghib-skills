@@ -32,6 +32,7 @@ PRD → issues → triage → execution loop.
 - [`review`](resources/review/SKILL.md) - Review changes since a fixed point along two axes — Standards (does it follow this repo's coding standards?) and Spec (does it match what the issue/PRD asked for?). Runs both reviews in parallel sub-agents.
 - [`improve-codebase-architecture`](resources/improve-codebase-architecture/SKILL.md) - Find deepening opportunities, informed by the domain language in CONTEXT.md and the decisions in `docs/adr/`.
 - [`no-deprecated-code`](resources/no-deprecated-code/SKILL.md) - Zero-tolerance policy for deprecated APIs in generated or edited code: detect before writing, fix as you touch, verify before committing. Stack-agnostic with optional per-ecosystem lookup tables.
+- [`refactor`](resources/refactor/SKILL.md) - Surgical code refactoring without changing behavior — extract functions, rename, break down god functions, improve type safety, eliminate code smells. Use for gradual improvements when a full rewrite would be too drastic.
 
 ### Testing
 
@@ -86,7 +87,7 @@ copilot plugin marketplace add ragmha/ragmha-skills
 copilot plugin install ragmha-skills@ragmha-skills
 ```
 
-Verify: `copilot plugin list` and `/skills list` (should show 28 skills). Update with `copilot plugin update ragmha-skills`.
+Verify: `copilot plugin list` and `/skills list` (should show 29 skills). Update with `copilot plugin update ragmha-skills`.
 
 ### Copilot CLI — manual copy
 
