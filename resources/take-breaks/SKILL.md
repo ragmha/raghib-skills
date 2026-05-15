@@ -28,7 +28,7 @@ Pure bash + osascript. **No external dependencies**, no `chafa`, no node — wor
 └── scripts/
     ├── cat-gate.sh                     # opens a new Terminal window (called by launchd)
     ├── cat-screen.sh                   # the frame loop + countdown
-    ├── com.raghib.cat-gatekeeper.plist # launchd template (StartInterval = 1800s)
+    ├── com.ragmha.cat-gatekeeper.plist # launchd template (StartInterval = 1800s)
     ├── install.sh                      # copy plist → ~/Library/LaunchAgents, load it
     └── uninstall.sh                    # unload + remove
 ```

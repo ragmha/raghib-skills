@@ -6,8 +6,8 @@
 # No external dependencies — pure bash + osascript + Terminal.app.
 
 set -e
-PLIST_SRC="$(cd "$(dirname "$0")" && pwd)/com.raghib.cat-gatekeeper.plist"
-PLIST_DST="$HOME/Library/LaunchAgents/com.raghib.cat-gatekeeper.plist"
+PLIST_SRC="$(cd "$(dirname "$0")" && pwd)/com.ragmha.cat-gatekeeper.plist"
+PLIST_DST="$HOME/Library/LaunchAgents/com.ragmha.cat-gatekeeper.plist"
 
 chmod +x "$(dirname "$0")"/*.sh
 
