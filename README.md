@@ -45,6 +45,7 @@ PRD → issues → triage → execution loop.
 ### Git Workflow
 
 - [`conventional-commit`](resources/conventional-commit/SKILL.md) - Craft a Conventional Commits message for the currently staged changes — pick a type, scope, and imperative description, then commit.
+- [`git-worktree`](resources/git-worktree/SKILL.md) - Isolate per-task feature work in sibling worktree directories instead of switching branches in the main checkout — protects open PRs from accidental cross-contamination.
 
 ### Debugging
 
@@ -83,7 +84,7 @@ copilot plugin marketplace add ragmha/ragmha-skills
 copilot plugin install ragmha-skills@ragmha-skills
 ```
 
-Verify: `copilot plugin list` and `/skills list` (should show 25 skills). Update with `copilot plugin update ragmha-skills`.
+Verify: `copilot plugin list` and `/skills list` (should show 26 skills). Update with `copilot plugin update ragmha-skills`.
 
 ### Copilot CLI — manual copy
 
