@@ -4,7 +4,7 @@ A cross-platform statusline for [GitHub Copilot CLI](https://github.com/github/c
 
 ```
 🧠 gpt-5.4 · ████▍░░░░░ 44% 87.9k/200.0k · last ↓2.1k ↑412 · ⏱ 12m04s
-📁 ~/code/agentic-ai-days · ● ⎇ main · +42 -8
+📁 ~/code/sample-repo · ● ⎇ main · +42 -8
 💳 Business: $0.96 / $19.00 (5.1%) · session $0.06 · $18.04 left · 📈 ▂▃▂▄▅▄▅▆▅▇ · 📅 █████▌░░░░░░░░░░░░░░░░░░░░░░░░ d6/30
 ```
 
