@@ -12,6 +12,7 @@ Skills are reusable `SKILL.md` instruction files that teach an AI agent how to p
   - [Issue Tracker Workflow](#issue-tracker-workflow)
   - [Code Review & Architecture](#code-review--architecture)
   - [Testing](#testing)
+  - [Git Workflow](#git-workflow)
   - [Repo Setup](#repo-setup)
   - [Debugging](#debugging)
   - [Writing](#writing)
@@ -57,11 +58,20 @@ PRD → issues → triage → execution loop.
 
 - [`review`](resources/review/SKILL.md) - Review changes since a fixed point along two axes — Standards (does it follow this repo's coding standards?) and Spec (does it match what the issue/PRD asked for?). Runs both reviews in parallel sub-agents.
 - [`improve-codebase-architecture`](resources/improve-codebase-architecture/SKILL.md) - Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in `docs/adr/`.
+- [`refactor`](resources/refactor/SKILL.md) - Surgical, behavior-preserving refactors: extract function, rename, break down god functions, eliminate code smells, improve type safety, apply common patterns.
+- [`no-deprecated-code`](resources/no-deprecated-code/SKILL.md) - Zero-tolerance policy on deprecated APIs, with ready-to-use migration tables for Zod v4, React/React Native, Expo SDK, TypeScript/Node, and Copilot agent tool-name namespacing.
+- [`post-task-code-review`](resources/post-task-code-review/SKILL.md) - Mandatory 5-pass review (security / correctness / performance / deprecated APIs / style) with a CRITICAL/HIGH/MEDIUM/LOW severity rubric and a multi-model sub-agent strategy.
 
 ### Testing
 
 - [`tdd`](resources/tdd/SKILL.md) - Test-driven development with a strict red-green-refactor loop, vertical slices, and integration-test bias.
 - [`migrate-to-shoehorn`](resources/migrate-to-shoehorn/SKILL.md) - Migrate test files from `as` type assertions to [`@total-typescript/shoehorn`](https://github.com/total-typescript/shoehorn) for safer partial test data.
+
+### Git Workflow
+
+- [`trunk-based-development`](resources/trunk-based-development/SKILL.md) - Trunk-based workflow with short-lived feature branches, conventional commits, and an explicit Copilot/agent rule that never commits directly to `main`.
+- [`git-worktree`](resources/git-worktree/SKILL.md) - Isolate per-task feature work in sibling worktree directories instead of switching branches in the main checkout — protects open PRs from accidental cross-contamination.
+- [`conventional-commit`](resources/conventional-commit/SKILL.md) - Structured XML prompt and workflow for generating Conventional Commits messages with type/scope/description schema, examples, and validation rules.
 
 ### Repo Setup
 
@@ -110,7 +120,7 @@ Verify they loaded:
 ```bash
 copilot plugin list           # should show raghib-skills
 # in an interactive session:
-/skills list                  # should list all 23 skills
+/skills list                  # should list all 29 skills
 ```
 
 Updating later:

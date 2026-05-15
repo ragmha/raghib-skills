@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "raghib-skills",
-      "description": "All 23 skills in one bundle: context management, planning grills, issue tracker workflow, code review, TDD, repo setup, debugging, writing pipelines, skill authoring, communication style, wellness.",
+      "description": "All 29 skills in one bundle: context management, planning grills, issue tracker workflow, code review, TDD, git workflow, repo setup, debugging, writing pipelines, skill authoring, communication style, wellness.",
       "version": "0.1.0",
       "source": ".",
       "author": {
