@@ -1,6 +1,6 @@
 {
   "name": "ragmha-skills",
-  "description": "A personal collection of 28 agent skills for the GitHub Copilot CLI: disciplined debugging, issue triage, planning grills, TDD, code review, writing pipelines, AI-credit cost tracking with a custom statusline, and more.",
+  "description": "A personal collection of 29 agent skills for the GitHub Copilot CLI: disciplined debugging, issue triage, planning grills, TDD, code review, writing pipelines, AI-credit cost tracking with a custom statusline, and more.",
   "version": "0.1.0",
   "author": {
     "name": "Raghib Hasan",
