@@ -96,28 +96,87 @@ A three-stage writing pipeline (raw material → structured article → narrativ
 
 ## Installing
 
-### A single skill
+### GitHub Copilot CLI — via the marketplace (recommended)
+
+This repo ships a [Copilot CLI plugin marketplace](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-marketplace), so installing every skill is two commands:
 
 ```bash
-# clone this repo somewhere
-git clone https://github.com/ragmha/raghib-skills.git ~/code/raghib-skills
-
-# copy the skill you want into your global skills folder
-cp -R ~/code/raghib-skills/resources/diagnose ~/.copilot/skills/
+copilot plugin marketplace add ragmha/raghib-skills
+copilot plugin install raghib-skills@raghib-skills
 ```
 
-The agent will discover it on the next session.
+Verify they loaded:
 
-### All skills at once
+```bash
+copilot plugin list           # should show raghib-skills
+# in an interactive session:
+/skills list                  # should list all 23 skills
+```
+
+Updating later:
+
+```bash
+copilot plugin update raghib-skills
+```
+
+Uninstalling:
+
+```bash
+copilot plugin uninstall raghib-skills
+```
+
+### GitHub Copilot CLI — direct install (no marketplace)
+
+If you'd rather pin to a specific commit or work from a local clone:
+
+```bash
+# install directly from GitHub
+copilot plugin install ragmha/raghib-skills
+
+# or from a local checkout (handy while iterating)
+git clone https://github.com/ragmha/raghib-skills.git ~/code/raghib-skills
+copilot plugin install ~/code/raghib-skills
+```
+
+### GitHub Copilot CLI — manual copy (no plugin system)
+
+The original install path still works — every skill is just a folder with a `SKILL.md`:
 
 ```bash
 git clone https://github.com/ragmha/raghib-skills.git ~/code/raghib-skills
+
+# one skill
+cp -R ~/code/raghib-skills/resources/diagnose ~/.copilot/skills/
+
+# all skills
 mkdir -p ~/.copilot/skills
 cp -R ~/code/raghib-skills/resources/* ~/.copilot/skills/
 ```
 
-### Per-repo
+### Per-repo (project-scoped skills)
 
-Drop a skill into `<repo>/.github/skills/<name>/` to make it project-specific.
+Drop a skill folder into `<repo>/.github/skills/<name>/` to make it project-specific. Project-level skills take precedence over personal and plugin skills, so this is the right place for anything that's specific to one codebase.
+
+### VS Code (GitHub Copilot extension)
+
+VS Code Copilot doesn't yet consume Copilot CLI plugins directly — it loads its own `.prompt.md` / `.instructions.md` / chat-mode files. Until that gap closes, the simplest route is to copy the skills you want into your VS Code prompts folder and reference them from chat:
+
+```bash
+# macOS
+cp -R resources/diagnose "$HOME/Library/Application Support/Code/User/prompts/"
+
+# Linux
+cp -R resources/diagnose "$HOME/.config/Code/User/prompts/"
+```
+
+Or, for a workspace-scoped install, copy the skill into `<repo>/.github/prompts/`. Either way, invoke the skill in Copilot Chat by referencing the `SKILL.md` file (`#SKILL.md`) or pasting its contents into a `.prompt.md` wrapper.
 
 ---
+
+## License
+
+[MIT](LICENSE) — © 2026 Raghib Hasan.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). One PR per skill change; keep `SKILL.md` triggers sharp so model-side invocation works.
