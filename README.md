@@ -14,6 +14,7 @@ Skills are reusable `SKILL.md` instruction files that teach an AI agent how to p
   - [Testing](#testing)
   - [Repo Setup](#repo-setup)
   - [Debugging](#debugging)
+  - [Cost & Billing](#cost--billing)
   - [Writing](#writing)
   - [Skill Authoring](#skill-authoring)
   - [Communication Style](#communication-style)
@@ -71,6 +72,10 @@ PRD → issues → triage → execution loop.
 ### Debugging
 
 - [`diagnose`](resources/diagnose/SKILL.md) - Disciplined diagnosis loop for hard bugs and performance regressions — reproduce → minimise → hypothesise → instrument → fix → regression-test.
+
+### Cost & Billing
+
+- [`ai-credits`](resources/ai-credits/SKILL.md) - Track the true USD cost of agentic Copilot work and reconcile it against Copilot Business ($19 / 1,900 AI credits), Copilot Enterprise ($39 / 3,900 AI credits), or an Unlimited tier. Ships a per-model price table, a `cost.mjs` shell CLI, and a cross-platform Copilot CLI [statusline](resources/ai-credits/STATUSLINE.md) (model + context gauge + session/month spend + 30-day burn calendar).
 
 ### Writing
 

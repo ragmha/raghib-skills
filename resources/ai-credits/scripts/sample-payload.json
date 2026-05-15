@@ -1,0 +1,34 @@
+{
+  "cwd": "/home/you/code/sample-repo",
+  "session_name": "feat/cost-tracker",
+  "version": "0.1.0",
+  "model": {
+    "id": "gpt-4o",
+    "display_name": "gpt-4o"
+  },
+  "cost": {
+    "total_api_duration_ms": 412000,
+    "total_duration_ms": 724000,
+    "total_lines_added": 42,
+    "total_lines_removed": 8,
+    "total_premium_requests": 0
+  },
+  "context_window": {
+    "current_context_tokens": 87900,
+    "displayed_context_limit": 200000,
+    "current_context_used_percentage": 43.95,
+    "total_input_tokens": 184320,
+    "total_output_tokens": 12480,
+    "total_cache_read_tokens": 24576,
+    "total_cache_write_tokens": 0,
+    "total_reasoning_tokens": 0,
+    "last_call_input_tokens": 2150,
+    "last_call_output_tokens": 412,
+    "current_usage": {
+      "input_tokens": 184320,
+      "cache_read_tokens": 24576,
+      "cache_write_tokens": 0,
+      "output_tokens": 12480
+    }
+  }
+}
