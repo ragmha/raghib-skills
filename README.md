@@ -42,6 +42,10 @@ PRD → issues → triage → execution loop.
 - [`setup-pre-commit`](resources/setup-pre-commit/SKILL.md) - Set up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests.
 - [`setup-skills`](resources/setup-skills/SKILL.md) - Set up an `## Agent skills` block in `AGENTS.md`/`CLAUDE.md` and `docs/agents/` so engineering skills know this repo's issue tracker, triage labels, and domain doc layout.
 
+### Git Workflow
+
+- [`conventional-commit`](resources/conventional-commit/SKILL.md) - Craft a Conventional Commits message for the currently staged changes — pick a type, scope, and imperative description, then commit.
+
 ### Debugging
 
 - [`diagnose`](resources/diagnose/SKILL.md) - Disciplined diagnosis loop for hard bugs and performance regressions — reproduce → minimise → hypothesise → instrument → fix → regression-test.
@@ -79,7 +83,7 @@ copilot plugin marketplace add ragmha/ragmha-skills
 copilot plugin install ragmha-skills@ragmha-skills
 ```
 
-Verify: `copilot plugin list` and `/skills list` (should show 24 skills). Update with `copilot plugin update ragmha-skills`.
+Verify: `copilot plugin list` and `/skills list` (should show 25 skills). Update with `copilot plugin update ragmha-skills`.
 
 ### Copilot CLI — manual copy
 
