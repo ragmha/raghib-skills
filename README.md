@@ -75,7 +75,7 @@ PRD → issues → triage → execution loop.
 
 ### Cost & Billing
 
-- [`ai-credits`](resources/ai-credits/SKILL.md) - Track the true USD cost of agentic Copilot work and reconcile it against Copilot Business ($19 / 1,900 AI credits), Copilot Enterprise ($39 / 3,900 AI credits), or an Unlimited tier. Ships a per-model price table, a `cost.mjs` shell CLI, and a cross-platform Copilot CLI [statusline](resources/ai-credits/STATUSLINE.md) (model + context gauge + session/month spend + 30-day burn calendar).
+- [`ai-credits`](resources/ai-credits/README.md) - Track the true USD cost of agentic Copilot work and reconcile it against Copilot Business ($19 / 1,900 AI credits), Copilot Enterprise ($39 / 3,900 AI credits), or an Unlimited tier. Ships a per-model price table, a `cost.mjs` shell CLI, and a cross-platform Copilot CLI [statusline](resources/ai-credits/STATUSLINE.md) with setup instructions in the skill README.
 
 ### Writing
 
@@ -115,7 +115,7 @@ Verify they loaded:
 ```bash
 copilot plugin list           # should show raghib-skills
 # in an interactive session:
-/skills list                  # should list all 23 skills
+/skills list                  # should list all 24 skills
 ```
 
 Updating later:
