@@ -7,7 +7,7 @@
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>/Users/raghibhasan/.copilot/skills/take-breaks/scripts/cat-gate.sh</string>
+        <string>__CAT_GATE_PATH__</string>
     </array>
     <key>StartInterval</key>
     <integer>1800</integer>

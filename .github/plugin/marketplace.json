@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "ragmha-skills",
-      "description": "All 29 skills in one bundle: context management, planning grills, issue tracker workflow, code review, TDD, repo setup, git workflow, debugging, writing pipelines, skill authoring, communication style, wellness.",
+      "description": "All 29 skills in one bundle: context management, planning grills, issue tracker workflow, code review, TDD, repo setup, git workflow, debugging, cost & billing, writing pipelines, skill authoring, communication style, wellness.",
       "version": "0.1.0",
       "source": ".",
       "author": {
