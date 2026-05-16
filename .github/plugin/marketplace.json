@@ -1,0 +1,33 @@
+{
+  "name": "raghib-skills",
+  "owner": {
+    "name": "Raghib Hasan"
+  },
+  "metadata": {
+    "description": "Personal collection of agent skills for GitHub Copilot CLI by @ragmha.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "raghib-skills",
+      "description": "All 23 skills in one bundle: context management, planning grills, issue tracker workflow, code review, TDD, repo setup, debugging, writing pipelines, skill authoring, communication style, wellness.",
+      "version": "0.1.0",
+      "source": ".",
+      "author": {
+        "name": "Raghib Hasan",
+        "url": "https://github.com/ragmha"
+      },
+      "homepage": "https://github.com/ragmha/raghib-skills",
+      "repository": "https://github.com/ragmha/raghib-skills",
+      "license": "MIT",
+      "keywords": [
+        "skills",
+        "agent-skills",
+        "copilot",
+        "copilot-cli"
+      ],
+      "category": "workflow",
+      "skills": "resources/"
+    }
+  ]
+}
