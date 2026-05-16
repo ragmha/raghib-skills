@@ -6,13 +6,16 @@
 # No external dependencies — pure bash + osascript + Terminal.app.
 
 set -e
-PLIST_SRC="$(cd "$(dirname "$0")" && pwd)/com.raghib.cat-gatekeeper.plist"
-PLIST_DST="$HOME/Library/LaunchAgents/com.raghib.cat-gatekeeper.plist"
+SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLIST_SRC="$SCRIPTS_DIR/com.ragmha.cat-gatekeeper.plist"
+PLIST_DST="$HOME/Library/LaunchAgents/com.ragmha.cat-gatekeeper.plist"
 
-chmod +x "$(dirname "$0")"/*.sh
+chmod +x "$SCRIPTS_DIR"/*.sh
 
 launchctl unload "$PLIST_DST" 2>/dev/null || true
-cp "$PLIST_SRC" "$PLIST_DST"
+# launchd plists need an absolute path (no $HOME / ~ expansion in
+# ProgramArguments), so substitute the real install location at copy time.
+sed "s|__CAT_GATE_PATH__|$SCRIPTS_DIR/cat-gate.sh|" "$PLIST_SRC" > "$PLIST_DST"
 launchctl load "$PLIST_DST"
 
 echo "🐈 Cat Gatekeeper armed."

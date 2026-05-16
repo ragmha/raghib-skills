@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.raghib.cat-gatekeeper</string>
+    <string>com.ragmha.cat-gatekeeper</string>
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>

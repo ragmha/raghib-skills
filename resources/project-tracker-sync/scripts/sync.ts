@@ -84,7 +84,7 @@ function classify(dir: string): Status {
 function pickGroupAndEmoji(name: string): { group: string; emoji: string } {
   const n = name.toLowerCase();
   const has = (...needles: string[]) => needles.some((k) => n.includes(k));
-  if (has("resume", "blog", "raghib.io", "personal-site"))
+  if (has("resume", "blog", "personal-site"))
     return { group: "Road to Excellence 2025", emoji: "📝" };
   if (has("finance", "budget", "trading", "tax", "money"))
     return { group: "Finance & Investment", emoji: "💰" };

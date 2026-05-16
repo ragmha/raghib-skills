@@ -1,5 +1,5 @@
 {
-  "name": "raghib-skills",
+  "name": "ragmha-skills",
   "owner": {
     "name": "Raghib Hasan"
   },
@@ -9,16 +9,16 @@
   },
   "plugins": [
     {
-      "name": "raghib-skills",
-      "description": "All 23 skills in one bundle: context management, planning grills, issue tracker workflow, code review, TDD, repo setup, debugging, writing pipelines, skill authoring, communication style, wellness.",
+      "name": "ragmha-skills",
+      "description": "All 29 skills in one bundle: context management, planning grills, issue tracker workflow, code review, TDD, repo setup, git workflow, debugging, cost & billing, writing pipelines, skill authoring, communication style, wellness.",
       "version": "0.1.0",
       "source": ".",
       "author": {
         "name": "Raghib Hasan",
         "url": "https://github.com/ragmha"
       },
-      "homepage": "https://github.com/ragmha/raghib-skills",
-      "repository": "https://github.com/ragmha/raghib-skills",
+      "homepage": "https://github.com/ragmha/ragmha-skills",
+      "repository": "https://github.com/ragmha/ragmha-skills",
       "license": "MIT",
       "keywords": [
         "skills",
